@@ -146,7 +146,7 @@
     /* Dashboard Metrics */
     .metrics-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 12px;
       margin-bottom: 20px;
     }
@@ -342,6 +342,113 @@
 
     .fact-check-sources li::before {
       content: "🔍 ";
+      margin-right: 6px;
+    }
+
+    /* Cognitive Bias Cards */
+    .bias-card {
+      background: white;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      border-left: 4px solid #06b6d4;
+      position: relative;
+    }
+
+    .bias-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .bias-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: #06b6d4;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .bias-icon {
+      font-size: 20px;
+    }
+
+    .bias-quote {
+      background: #cffafe;
+      border-left: 3px solid #06b6d4;
+    }
+
+    .counter-strategy {
+      background: #fef3c7;
+      border: 2px solid #f59e0b;
+      border-radius: 6px;
+      padding: 12px;
+      margin-top: 10px;
+    }
+
+    .counter-label {
+      font-size: 11px;
+      color: #92400e;
+      font-weight: 600;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    .counter-text {
+      font-size: 13px;
+      color: #92400e;
+      line-height: 1.5;
+    }
+
+    /* Related Articles Section */
+    .related-articles-box {
+      background: #d1fae5;
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 12px;
+    }
+
+    .related-articles-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #065f46;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .search-terms-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .search-terms-list li {
+      background: white;
+      padding: 10px 12px;
+      border-radius: 6px;
+      margin-bottom: 6px;
+      border-left: 3px solid #10b981;
+    }
+
+    .search-terms-list li a {
+      color: #065f46;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      display: block;
+    }
+
+    .search-terms-list li a:hover {
+      color: #10b981;
+      text-decoration: underline;
+    }
+
+    .search-terms-list li::before {
+      content: "🔗 ";
       margin-right: 6px;
     }
 

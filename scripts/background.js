@@ -123,20 +123,75 @@ Your task is to analyze this article for 10 SPECIFIC statistical fallacies and i
     - Cognitive Biases Exploited: Pattern recognition bias, hindsight bias, overconfidence effect, authority bias
     - Example: "Economic model predicts recession with 95% accuracy" (overfit to historical data)
 
+=== COGNITIVE BIASES TO DETECT ===
+
+In addition to biases exploited BY fallacies, also look for these standalone cognitive biases:
+
+1. CONFIRMATION BIAS
+   - Definition: Seeking/interpreting information that confirms existing beliefs
+   - Detection: Selective evidence, dismissing contradictory info, echo chamber language
+   - Example: "As we've always known..." "This proves what we suspected..."
+
+2. AVAILABILITY HEURISTIC
+   - Definition: Overweighting easily recalled/recent information
+   - Detection: Recent examples dominate, vivid anecdotes over statistics
+   - Example: "After the recent incident..." "Everyone remembers when..."
+
+3. ANCHORING BIAS
+   - Definition: Over-relying on first piece of information
+   - Detection: Initial number/claim dominates rest of article
+   - Example: Starting with extreme claim, then "moderating"
+
+4. BANDWAGON EFFECT
+   - Definition: Believing something because many others do
+   - Detection: "Everyone agrees..." "Experts say..." "Popular opinion..."
+   - Example: "The consensus is..." without evidence
+
+5. AUTHORITY BIAS
+   - Definition: Trusting authority figures uncritically
+   - Detection: Appeal to credentials without evidence
+   - Example: "Dr. Smith says..." without examining claim validity
+
+6. EMOTIONAL REASONING
+   - Definition: Using emotions as evidence of truth
+   - Detection: Fear-mongering, outrage, moral panic language
+   - Example: "This is outrageous!" as argument
+
+7. IN-GROUP BIAS
+   - Definition: Favoring your group, distrusting others
+   - Detection: Us vs. them language, tribal signaling
+   - Example: "Real Americans..." "Those people..."
+
+8. FRAMING EFFECT  
+   - Definition: Same info presented differently changes perception
+   - Detection: Loaded language, selective framing
+   - Example: "Tax relief" vs. "Tax cuts for wealthy"
+
+9. NEGATIVITY BIAS
+   - Definition: Negative events weighted more than positive
+   - Detection: Disaster language, crisis framing, catastrophizing
+   - Example: Focusing only on problems, ignoring improvements
+
+10. RECENCY BIAS
+    - Definition: Recent events seem more important/representative
+    - Detection: "In recent months..." as if permanent trend
+    - Example: Extrapolating short-term patterns to long-term
+
 === YOUR OUTPUT FORMAT ===
 
 Structure your response EXACTLY as follows:
 
 ## DASHBOARD METRICS
-- Total Fallacies: [number]
+- Total Fallacies: [number of fallacy instances found]
+- Total Biases: [number of STANDALONE cognitive bias instances found - count ONLY biases in COGNITIVE BIAS INSTANCES section, NOT those mentioned in fallacies]
 - Objectivity: [0-10]
 - Legitimacy: [High/Medium/Low]
 
 ## FALLACY INSTANCES
 
-IMPORTANT: Report EACH instance of a fallacy SEPARATELY. If the same fallacy type appears 3 times in the article, create 3 separate entries.
+IMPORTANT: Report EACH instance SEPARATELY.
 
-For EACH fallacy instance found:
+For EACH fallacy instance:
 
 **Fallacy:** [One of the 10 fallacy names]
 **Confidence:** [Percentage]
@@ -149,12 +204,34 @@ For EACH fallacy instance found:
 
 If NO fallacies: "✓ No statistical fallacies detected."
 
+## COGNITIVE BIAS INSTANCES
+
+CRITICAL INSTRUCTIONS:
+1. This section is COMPLETELY INDEPENDENT from the fallacy section above
+2. Do NOT count or reference biases mentioned in "Biases Exploited" in fallacies
+3. Look FRESH at the article for the 10 cognitive biases listed above
+4. Report EACH cognitive bias instance you find as a NEW, SEPARATE entry
+5. Even if a similar bias was mentioned in fallacies, report it HERE if you find it in the article
+6. The "Total Biases" count in dashboard should ONLY count biases in THIS section
+
+For EACH bias instance found:
+
+**Bias:** [One of the 10 cognitive bias names]
+**Confidence:** [Percentage]
+**Location:** "[Exact quote, 1 sentence max]"
+**How It Manipulates:** [One concise sentence]
+**Counter Strategy:** [One sentence on how to counter this bias]
+
+---
+
+If NO biases found: "✓ No cognitive biases detected."
+
 ## CRITICAL THINKING
 
-For readers to protect themselves:
-1. [One actionable question to ask]
-2. [One actionable question to ask]  
-3. [One actionable question to ask]
+3 questions readers should ask:
+1. [Actionable question]
+2. [Actionable question]  
+3. [Actionable question]
 
 ## FACT-CHECK
 
@@ -162,6 +239,13 @@ Where to verify:
 - [Specific source 1]
 - [Specific source 2]
 - [Specific source 3]
+
+## SEARCH TERMS
+
+For finding related articles, use these terms:
+- [Search term 1]
+- [Search term 2]
+- [Search term 3]
 
 === IMPORTANT ANALYSIS GUIDELINES ===
 
@@ -232,6 +316,34 @@ Remember: Your goal is to EDUCATE readers about statistical reasoning, not just 
 }
 
 /**
+ * Search for related articles using Google Custom Search
+ */
+async function searchRelatedArticles(searchTerms, articleTitle) {
+  try {
+    // Use the article title and search terms for better results
+    const query = `${articleTitle} ${searchTerms[0]} news`;
+    const encodedQuery = encodeURIComponent(query);
+    
+    // Using Google search (without API key - scraping search results page)
+    const searchUrl = `https://www.google.com/search?q=${encodedQuery}&tbm=nws&num=5`;
+    
+    // Note: Due to CORS, we'll return the search URL for the user to open
+    // Real implementation would need a backend or API
+    return {
+      success: true,
+      searchUrl: searchUrl,
+      searchTerms: searchTerms,
+      query: query
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+}
+
+/**
  * Listen for messages from popup
  */
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -242,6 +354,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       .catch(error => sendResponse({ success: false, error: error.message }));
     
     return true; // Keep the message channel open for async response
+  }
+  
+  if (request.action === 'searchRelated') {
+    // Handle search request
+    searchRelatedArticles(request.searchTerms, request.articleTitle)
+      .then(result => sendResponse(result))
+      .catch(error => sendResponse({ success: false, error: error.message }));
+    
+    return true;
   }
 });
 

@@ -90,13 +90,16 @@ function formatAnalysis(analysisText) {
   const sections = {
     metrics: analysisText.match(/## DASHBOARD METRICS\s*([\s\S]*?)(?=##|$)/i)?.[1]?.trim() || '',
     fallacies: analysisText.match(/## FALLACY INSTANCES\s*([\s\S]*?)(?=##|$)/i)?.[1]?.trim() || '',
+    biases: analysisText.match(/## COGNITIVE BIAS INSTANCES\s*([\s\S]*?)(?=##|$)/i)?.[1]?.trim() || '',
     thinking: analysisText.match(/## CRITICAL THINKING\s*([\s\S]*?)(?=##|$)/i)?.[1]?.trim() || '',
-    factcheck: analysisText.match(/## FACT-CHECK\s*([\s\S]*?)(?=##|$)/i)?.[1]?.trim() || ''
+    factcheck: analysisText.match(/## FACT-CHECK\s*([\s\S]*?)(?=##|$)/i)?.[1]?.trim() || '',
+    searchterms: analysisText.match(/## SEARCH TERMS\s*([\s\S]*?)(?=##|$)/i)?.[1]?.trim() || ''
   };
 
   // Dashboard Metrics
   if (sections.metrics) {
     const fallaciesCount = sections.metrics.match(/Total Fallacies:\s*(\d+)/i)?.[1] || '0';
+    const biasesCount = sections.metrics.match(/Total Biases:\s*(\d+)/i)?.[1] || '0';
     const objectivityScore = sections.metrics.match(/Objectivity:\s*(\d+)/i)?.[1] || '5';
     const legitimacy = sections.metrics.match(/Legitimacy:\s*(\w+)/i)?.[1] || 'Medium';
 
@@ -108,6 +111,10 @@ function formatAnalysis(analysisText) {
         <div class="metric-card">
           <div class="metric-value" style="color: #f59e0b;">${fallaciesCount}</div>
           <div class="metric-label">Fallacies</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value" style="color: #06b6d4;">${biasesCount}</div>
+          <div class="metric-label">Cognitive Biases</div>
         </div>
         <div class="metric-card">
           <div class="metric-value">${objectivityScore}/10</div>
@@ -203,6 +210,82 @@ function formatAnalysis(analysisText) {
     }
   }
 
+  // Cognitive Bias Instances
+  if (sections.biases) {
+    if (sections.biases.includes('No cognitive biases detected')) {
+      html += `
+        <div class="empty-state">
+          <div class="empty-state-icon">✓</div>
+          <strong>No Cognitive Biases Detected</strong>
+          <p style="margin-top: 8px;">This article appears to be psychologically sound.</p>
+        </div>
+      `;
+    } else {
+      // Parse each bias instance
+      const biasPattern = /\*\*Bias:\*\*\s*(.+?)\s*\*\*Confidence:\*\*\s*(.+?)\s*\*\*Location:\*\*\s*"(.+?)"\s*\*\*How It Manipulates:\*\*\s*(.+?)\s*\*\*Counter Strategy:\*\*\s*(.+?)\s*---/gs;
+      let match;
+      let instanceNum = 0;
+      
+      while ((match = biasPattern.exec(sections.biases)) !== null) {
+        instanceNum++;
+        const biasName = match[1].trim();
+        const confidence = match[2].trim();
+        const location = match[3].trim();
+        const howManipulates = match[4].trim();
+        const counterStrategy = match[5].trim();
+        
+        // Get icon for bias type
+        const biasIcons = {
+          'CONFIRMATION BIAS': '🔍',
+          'AVAILABILITY HEURISTIC': '📰',
+          'ANCHORING BIAS': '⚓',
+          'BANDWAGON EFFECT': '🚂',
+          'AUTHORITY BIAS': '👔',
+          'EMOTIONAL REASONING': '😢',
+          'IN-GROUP BIAS': '👥',
+          'FRAMING EFFECT': '🖼️',
+          'NEGATIVITY BIAS': '⚠️',
+          'RECENCY BIAS': '⏰'
+        };
+        
+        let icon = '🧠';
+        for (const [key, value] of Object.entries(biasIcons)) {
+          if (biasName.toUpperCase().includes(key)) {
+            icon = value;
+            break;
+          }
+        }
+        
+        html += `
+          <div class="bias-card">
+            <div class="bias-header">
+              <div class="bias-name">
+                <span class="bias-icon">${icon}</span>
+                ${biasName}
+              </div>
+              <div class="confidence">${confidence}</div>
+            </div>
+            <div class="quote-box bias-quote">${location}</div>
+            <div class="why-misleading">💡 ${howManipulates}</div>
+            <div class="counter-strategy">
+              <div class="counter-label">🛡️ Counter Strategy</div>
+              <div class="counter-text">${counterStrategy}</div>
+            </div>
+          </div>
+        `;
+      }
+      
+      if (instanceNum === 0) {
+        html += `
+          <div class="empty-state">
+            <div class="empty-state-icon">✓</div>
+            <strong>No Cognitive Biases Detected</strong>
+          </div>
+        `;
+      }
+    }
+  }
+
   // Critical Thinking Section
   if (sections.thinking && sections.thinking.length > 5) {
     html += `
@@ -242,6 +325,31 @@ function formatAnalysis(analysisText) {
       const cleaned = s.replace(/^[-•]\s*/, '').trim();
       if (cleaned) {
         html += `<li>${cleaned}</li>`;
+      }
+    });
+    
+    html += `
+        </ul>
+      </div>
+    `;
+  }
+
+  // Related Articles Section
+  if (sections.searchterms && sections.searchterms.length > 5) {
+    html += `
+      <div class="related-articles-box">
+        <div class="related-articles-title">
+          <span>🔗</span> Related Articles
+        </div>
+        <ul class="search-terms-list">
+    `;
+    
+    const terms = sections.searchterms.match(/[-•]\s*(.+?)(?=[-•]|$)/gs) || [];
+    terms.forEach(term => {
+      const cleaned = term.replace(/^[-•]\s*/, '').trim();
+      if (cleaned) {
+        const searchUrl = `https://news.google.com/search?q=${encodeURIComponent(cleaned)}`;
+        html += `<li><a href="${searchUrl}" target="_blank">${cleaned}</a></li>`;
       }
     });
     

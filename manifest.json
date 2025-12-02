@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Political News Rationalizer",
-  "version": "3.1.0",
-  "description": "Research-based detection of 10 statistical fallacies and cognitive biases using FREE Google Gemini AI",
+  "version": "3.2.0",
+  "description": "Research-based detection of 10 statistical fallacies and 10 cognitive biases using FREE Google Gemini AI",
   "permissions": [
     "activeTab",
     "storage",
