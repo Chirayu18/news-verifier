@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>News Legitimacy Checker</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 600px;
+      min-height: 600px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #333;
+    }
+
+    .container {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    h1 {
+      font-size: 20px;
+      margin-bottom: 15px;
+      color: #667eea;
+      text-align: center;
+    }
+
+    .settings-section {
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      font-size: 13px;
+      color: #555;
+    }
+
+    input[type="password"], input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+
+    input[type="password"]:focus, input[type="text"]:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    #saveApiKey {
+      background: #667eea;
+      color: white;
+    }
+
+    #saveApiKey:hover {
+      background: #5568d3;
+      transform: translateY(-2px);
+    }
+
+    #analyzeBtn {
+      background: #10b981;
+      color: white;
+    }
+
+    #analyzeBtn:hover {
+      background: #059669;
+      transform: translateY(-2px);
+    }
+
+    #analyzeBtn:disabled {
+      background: #d1d5db;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .status {
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 15px;
+      font-size: 13px;
+      text-align: center;
+      display: none;
+    }
+
+    .status.success {
+      background: #d1fae5;
+      color: #065f46;
+      display: block;
+    }
+
+    .status.error {
+      background: #fee2e2;
+      color: #991b1b;
+      display: block;
+    }
+
+    .status.info {
+      background: #dbeafe;
+      color: #1e40af;
+      display: block;
+    }
+
+    #results {
+      margin-top: 20px;
+      display: none;
+      max-height: 500px;
+      overflow-y: auto;
+    }
+
+    #results.show {
+      display: block;
+    }
+
+    /* Dashboard Metrics */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .metric-card {
+      background: white;
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      border-top: 3px solid #667eea;
+    }
+
+    .metric-value {
+      font-size: 32px;
+      font-weight: bold;
+      color: #667eea;
+      margin-bottom: 4px;
+    }
+
+    .metric-label {
+      font-size: 11px;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Fallacy Cards */
+    .fallacy-card {
+      background: white;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      border-left: 4px solid #f59e0b;
+      position: relative;
+    }
+
+    .fallacy-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .fallacy-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: #f59e0b;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .fallacy-icon {
+      font-size: 20px;
+    }
+
+    .confidence {
+      background: #3b82f6;
+      color: white;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .quote-box {
+      background: #fef3c7;
+      border-left: 3px solid #f59e0b;
+      padding: 12px;
+      border-radius: 4px;
+      margin: 12px 0;
+      font-size: 13px;
+      font-style: italic;
+      color: #92400e;
+    }
+
+    .why-misleading {
+      font-size: 13px;
+      color: #4b5563;
+      margin: 10px 0;
+      line-height: 1.5;
+    }
+
+    .bias-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 10px 0;
+    }
+
+    .bias-tag {
+      background: #e0e7ff;
+      color: #4338ca;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .rewrite {
+      background: #f0fdf4;
+      border: 2px solid #10b981;
+      border-radius: 6px;
+      padding: 12px;
+      margin-top: 10px;
+    }
+
+    .rewrite-label {
+      font-size: 11px;
+      color: #065f46;
+      font-weight: 600;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    .rewrite-text {
+      font-size: 13px;
+      color: #065f46;
+      line-height: 1.5;
+    }
+
+    /* Critical Thinking Section */
+    .thinking-box {
+      background: #ede9fe;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .thinking-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #5b21b6;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .thinking-questions {
+      list-style: none;
+      padding: 0;
+    }
+
+    .thinking-questions li {
+      background: white;
+      padding: 10px 12px;
+      border-radius: 6px;
+      margin-bottom: 6px;
+      font-size: 13px;
+      color: #4b5563;
+      border-left: 3px solid #8b5cf6;
+    }
+
+    .thinking-questions li::before {
+      content: "❓ ";
+      margin-right: 6px;
+    }
+
+    /* Fact Check Section */
+    .fact-check-box {
+      background: #dbeafe;
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .fact-check-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1e40af;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .fact-check-sources {
+      list-style: none;
+      padding: 0;
+    }
+
+    .fact-check-sources li {
+      background: white;
+      padding: 10px 12px;
+      border-radius: 6px;
+      margin-bottom: 6px;
+      font-size: 13px;
+      color: #4b5563;
+      border-left: 3px solid #3b82f6;
+    }
+
+    .fact-check-sources li::before {
+      content: "🔍 ";
+      margin-right: 6px;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #6b7280;
+    }
+
+    .empty-state-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    strong {
+      color: #1f2937;
+      font-weight: 600;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .loading.show {
+      display: block;
+    }
+
+    .spinner {
+      border: 3px solid #f3f4f6;
+      border-top: 3px solid #667eea;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .info-text {
+      font-size: 12px;
+      color: #6b7280;
+      margin-top: 8px;
+      font-style: italic;
+    }
+
+    .legitimacy-score {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+
+    .score-high {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .score-medium {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .score-low {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧠 Political News Rationalizer</h1>
+    
+    <div class="settings-section">
+      <label for="apiKey">Google Gemini API Key (FREE):</label>
+      <input type="password" id="apiKey" placeholder="AIza...">
+      <p class="info-text">Get your free API key from Google AI Studio. Stored locally and never shared.</p>
+      <div class="button-group" style="margin-top: 10px;">
+        <button id="saveApiKey">💾 Save Key</button>
+      </div>
+    </div>
+
+    <div class="status" id="status"></div>
+
+    <button id="analyzeBtn">🔍 Analyze This Article</button>
+
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <p style="margin-top: 10px; color: #667eea; font-weight: 600;">Analyzing with Google Gemini AI...</p>
+    </div>
+
+    <div id="results">
+      <div id="resultsContent"></div>
+    </div>
+  </div>
+
+  <script src="scripts/popup.js"></script>
+</body>
+</html>
